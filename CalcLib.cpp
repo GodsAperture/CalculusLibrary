@@ -1,6 +1,7 @@
 #include <complex>
 #include <iostream>
-//#include <vector>
+#include <vector>
+#include <functional>
 
 /* ////DISCLAIMER////
  * THIS LIBRARY WAS BUILT FOR CALCULUS RELATED TASKS.
@@ -49,14 +50,21 @@
  *      The second function differs in that instead of overwriting `arr` it is transferred to `arr2`.
  *
  *
+ * void multiply(T arr1[], const int dim1, const int dim2, const int dim3, T arr2[]) **OR** multiply(T arr1[], const int dim1, const int dim2, const int dim3, T arr2[], T arr3[])
+ *      This function multiplies the two array matrices `arr1` and `arr2` and stores the newly multiplied matrix to `arr1`.
+ *      The second function differs in that it stores the resulting matrix to `arr3`.
  *
+ *
+ * T index(T arr1[], const int dim1, const int dim2, const int dim3, T arr2[], const int index1, const int index2)
+ *      This function takes in two array matrices `arr1` and `arr2` and return the index (index1, index2) of the resulting matrix.
  */
 
 //This namespace will only contain commonly used constants, and will be updated as I find more. Constants will be Pascal case.
 namespace constant{
-
+//If you don't know what Pi is, God help you.
     const long double Pi = 3.1415926535897932385;
 
+//If you don't know what E is, that's okay.
     const long double E = 2.7182818284590452354;
 }
 
@@ -276,6 +284,22 @@ namespace calculus{
         }
     }
 
+////Perfect if you only need a few indices from the resulting matrix of `arr1` x `arr2`. Saves time and always works.
+    template <typename T>
+    T index(T arr1[], const int dim1, const int dim2, const int dim3, T arr2[], const int index1, const int index2){
+        T sum = 0;
+
+        for(int i = 0; i < dim1; i++){
+
+            printf("%lf, %lf\n", arr1[index1 * dim2 + i], arr2[index2 * dim3 + i * dim3]);
+            sum += arr1[index1 * dim2 + i] * arr2[index2 * dim3 + i * dim3];
+
+        }
+
+        return sum;
+
+    }
+
 
 
     ////Differentiation functions
@@ -285,7 +309,7 @@ namespace calculus{
     template<typename T1, typename T2>
     T1 derivative2_1(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
 
-        return (fun(point + 0.5 * delta) - fun(point - 0.5 * delta))/ delta;
+        return (fun(point + 0.5 * delta) - fun(point - 0.5 * delta)) / delta;
 
     }
 
@@ -307,6 +331,28 @@ namespace calculus{
     T1 derivative2_4(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
 
         return (fun(point + 2 * delta) - 4 * fun(point + delta) + 6 * fun(point) - 4 * fun(point - delta) + fun(point - 2 * delta)) / (delta * delta * delta * delta);
+
+    }
+
+////In its current form, derivative2_N is very ineffective for derivatives of `num` greater than two. I really need a new method.
+    template<typename T1, typename T2>
+    T1 derivative2_N(T1 (*fun)(T1), const T2 point, const int num, const T1 delta = 0.1){
+        T1 temp[num + 1];
+
+        for(int i = 0; i < num + 1; i++){
+            temp[i] = fun(point - 0.5 * num * delta - 0.5 * delta + i * delta);
+        }
+
+        for(int i = num; i > 0; i--){
+
+            for(int k = 0; k < i + 1; k++){
+                printf("%d\n", k + 1);
+                temp[k] = (temp[k + 1] - temp[k]) / delta;
+            }
+
+        }
+
+        return temp[0];
 
     }
 
@@ -367,13 +413,40 @@ namespace calculus{
         return (c1 * fun(point + 6 * delta) - c2 * fun(point + 5 * delta) + c3 * fun(point + 4 * delta) - c4 * fun(point + 3 * delta) + c5 * fun(point + 2 * delta) - c6 * fun(point + delta) + c7 * fun(point) - c6 * fun(point - delta) + c5 * fun(point - 2 * delta) - c4 * fun(point - 3 * delta) + c3 * fun(point - 4 * delta) - c2 * fun(point - 5 * delta) + c1 * fun(point - 6 * delta)) / (delta * delta * delta * delta);
     }
 
+////In its current form, derivative3_N is ineffective for derivatives of 'num' greater than 6. I need a new method.
+    template<typename T1, typename T2>
+    T1 derivative3_N(T1 (*fun)(T1), const T2 point, const int num, const T1 delta = 0.1){
+        T1 temp[3 * num + 1];
+        const T1 c1 = T1 (1) / T1 (24);
+        const T1 c2 = T1 (9) / T1 (8);
+
+        for(int i = 0; i < 3 * num + 1; i++){
+            temp[i] = fun(point - (1.5 * num) * delta + i * delta);
+        }
+
+        printf("\n");
+
+        for(int i = num; i > 0; i--){
+
+            for(int k = 0; k < 3 * i - 2; k++){
+                temp[k] = (-c1 * temp[k + 3] + c2 * temp[k + 2] - c2 * temp[k + 1] + c1 * temp[k]) / delta;
+            }
+
+            printf("\n");
+
+        }
+
+        return temp[0];
+
+    }
+
 
 
         ////array based derivatives
 ////IT IS ADVISED TO USE ARRAY BASED DERIVATIVES SPARINGLY TO PREVENT DATA CORRUPTION
+////I'll eventually add more of these, but that doesn't mean you should actually use them.
     template<typename T1, typename T2>
     void derivative3_1(const T1 arr[], int size, T2 arr2[], const T1 delta = 0.1){
-
         const T2 coe = 1 / delta;
 
         for(int i = 1; i < size - 4; i++){
@@ -470,13 +543,16 @@ namespace calculus{
     template<typename T>
     void derivative3_1(T (*fun)(T), const int size, T arr[], const T delta = 0.1, const T start = 0){
         const T coe = 1 / delta;
+        const T c1 = T(1) / T(24);
+        const T c2 = T(9) / T(8);
+
         T temp1 = fun(start - 1.5 * delta);
         T temp2 = fun(start - 0.5 * delta);
         T temp3 = fun(start + 0.5 * delta);
         T temp4 = fun(start + 1.5 * delta);
 
         for(int i = 0; i < size; i++){
-            arr[i] = coe * (0.0416666666666667 * temp1 - 1.125 * temp2 + 1.125 * temp3 - 0.0416666666666667 * temp4);
+            arr[i] = coe * (c1 * temp1 - c2 * temp2 + c2 * temp3 - c1 * temp4);
 
             temp1 = temp2;
             temp2 = temp3;
@@ -497,7 +573,7 @@ namespace calculus{
         const int ratio = val / delta;
         const T1 diff = val - ratio * delta;
 
-        //These constants are derived from Simpson's rule, when slightly modified so that a parabola is spaced by `delta`
+        //These constants are derived from Simpson's rule, when slightly modified so that points on a parabola are spaced by `delta`
         const T1 c1 = T1 (1) / T1 (6);
         const T1 c2 = T1 (2) / T1 (3);
 
@@ -524,19 +600,22 @@ namespace calculus{
         const int ratio = val / delta;
         const T1 diff = val - ratio * delta;
 
-        T1 old1 = val * 0.1666666666666667 * fun(low);
+        const T1 c1 = T1 (1) / T1 (6);
+        const T1 c2 = T1 (2) / T1 (3);
+
+        T1 old1 = val * c1 * fun(low);
 
         for(int i = 0; i < ratio; i ++) {
 
-            sum += old1 + 0.6666666666666667 * (val - (i + 0.5) * delta) * fun(low + (i + 0.5) * delta);
+            sum += old1 + c2 * (val - (i + 0.5) * delta) * fun(low + (i + 0.5) * delta);
 
-            old1 = 0.1666666666666667 * (val - (i + 1) * delta) * fun(low + (i + 1) * delta);
+            old1 = c1 * (val - (i + 1) * delta) * fun(low + (i + 1) * delta);
 
             sum += old1;
 
         }
 
-        return delta * sum + diff * (0.1666666666666667 * diff * fun(up - diff) + 0.3333333333333333 * diff * fun(up - 0.5 * diff));
+        return delta * sum + diff * (c1 * diff * fun(up - diff) + T1 (1) / T1 (3) * diff * fun(up - 0.5 * diff));
 
     }
 
@@ -645,14 +724,152 @@ namespace calculus{
 
 
 
-    ////ODE solvers (non-DSAE)
+    ////ODE solvers (non-DSE)
+    //These basic implementations are not as effective as I thought, I need a new method for these.
 
-////Same as before, I'll add this when I get to it.
+    template<typename T1, typename T2>
+    void ode1_1(void (*fun)(T1 [3], T1), T1 initialConditions[3], T2 end, double delta = 0.1){
+        // initialConditions[3] = {y(t0), y'(t0), t0}
+        T1 change;
+        long int iterations = std::abs(end - initialConditions[2]) / delta;
+
+        if(initialConditions[2] < end){
+            change = std::abs(delta);
+        }
+        else{
+            change = -std::abs(delta);
+        }
+
+        for(int i = 0; i <= iterations ; i++){
+            initialConditions[0] += change * initialConditions[1];
+            fun(initialConditions, change);
+            initialConditions[2] += change;
+        }
+
+    }
+
+    template<typename T1, typename T2>
+    void ode1_2(void (*fun)(T1 [4], T1), T1 initialConditions[4], T2 end, double delta = 0.1){
+        // initialConditions[4] = {y(t0), y'(t0), y''(t0), t0}
+        T1 change;
+        long int iterations = std::abs(end - initialConditions[3]) / delta;
+
+        if(initialConditions[3] < end){
+            change = std::abs(delta);
+        }
+        else{
+            change = -std::abs(delta);
+        }
+
+        for(int i = 0; i <= iterations ; i++){
+            initialConditions[0] += change * initialConditions[1];
+            initialConditions[1] += change * initialConditions[2];
+            fun(initialConditions, change);
+            initialConditions[3] += change;
+        }
+
+    }
+
+    template<typename T1, typename T2>
+    void ode2_2(void (*fun)(T1 [4], T1), T1 initialConditions[4], T2 end, double delta = 0.1){
+        // initialConditions[4] = {y(t0), y'(t0), y''(t0), t0}
+        T1 change;
+        long int iterations = std::abs(end - initialConditions[3]) / delta;
+
+        if(initialConditions[3] < end){
+            change = std::abs(delta);
+        }
+        else{
+            change = -std::abs(delta);
+        }
+
+        T1 del[2] = {change, change * change / 2};
+
+        for(int i = 0; i <= iterations; i++){
+            initialConditions[0] += change * initialConditions[1] + del[1] * initialConditions[2];
+            initialConditions[1] += change * initialConditions[2];
+            fun(initialConditions, change);
+            initialConditions[3] += change;
+         }
+
+    }
+
+    template<typename T1, typename T2>
+    void ode1_3(void (*fun)(T1 [5], T1), T1 initialConditions[5], T2 end, double delta = 0.1){
+        // initialConditions[5] = {y(t0), y'(t0), y''(t0), y'''(t0), t0}
+        T1 change;
+        long int iterations = std::abs(end - initialConditions[4]) / delta;
+
+        if(initialConditions[3] < end){
+            change = std::abs(delta);
+        }
+        else{
+            change = -std::abs(delta);
+        }
+
+        for(int i = 0; i <= iterations; i++){
+            initialConditions[0] += change * initialConditions[1];
+            initialConditions[1] += change * initialConditions[2];
+            initialConditions[2] += change * initialConditions[3];
+            fun(initialConditions, change);
+            initialConditions[4] += change;
+        }
+
+    }
+
+    template<typename T1, typename T2>
+    void ode3_2(void (*fun)(T1 [5], T1), T1 initialConditions[5], T2 end, double delta = 0.1){
+        // initialConditions[5] = {y(t0), y'(t0), y''(t0), y'''(t0), t0}
+        T1 change;
+        long int iterations = std::abs(end - initialConditions[4]) / delta;
+
+        if(initialConditions[3] < end){
+            change = std::abs(delta);
+        }
+        else{
+            change = -std::abs(delta);
+        }
+
+        T1 del[2] = {change, change * change / 2};
+
+        for(int i = 0; i <= iterations; i++){
+            initialConditions[0] += del[0] * initialConditions[1] + del[1] * initialConditions[2];
+            initialConditions[1] += del[0] * initialConditions[2] + del[1] * initialConditions[3];
+            initialConditions[2] += del[0] * initialConditions[3];
+            fun(initialConditions, change);
+            initialConditions[4] += change;
+        }
+
+    }
+
+    template<typename T1, typename T2>
+    void ode3_3(void (*fun)(T1 [5], T1), T1 initialConditions[5], T2 end, double delta = 0.1){
+        // initialConditions[5] = {y(t0), y'(t0), y''(t0), y'''(t0), t0}
+        T1 change;
+        long int iterations = std::abs(end - initialConditions[4]) / delta;
+
+        if(initialConditions[3] < end){
+            change = std::abs(delta);
+        }
+        else{
+            change = -std::abs(delta);
+        }
+
+        T1 del[3] = {change, change * change / 2, change * change * change / 6};
+
+        for(int i = 0; i <= iterations; i++){
+            initialConditions[0] += del[0] * initialConditions[1] + del[1] * initialConditions[2] + del[2] * initialConditions[3];
+            initialConditions[1] += del[0] * initialConditions[2] + del[1] * initialConditions[3];
+            initialConditions[2] += del[0] * initialConditions[3];
+            fun(initialConditions, del[0]);
+            initialConditions[4] += del[0];
+        }
+
+    }
 
 }
 
-
-    //This namespace if for lazier versions of functions that you might have to guess `delta` for a good, working answer.
+    //This namespace is for lazier versions of functions that the computer guesses `delta` for a good, working answer.
     //These will adjust `delta` automatically for a decent answer or just break entirely due to machine precision limitations. Use these wisely.
 namespace lazy{
 
@@ -678,84 +895,116 @@ namespace lazy{
 
     }
 
-////THESE ARE UNFINISHED, THEY ARE NOT LAZY ENOUGH
-//    template<typename T1, typename T2>
-//    T1 derivative2_2(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
-//
-//        return (fun(point + delta) - 2 * fun(point) + fun(point - delta)) / (delta * delta);
-//
-//    }
-//
-//    template<typename T1, typename T2>
-//    T1 derivative2_3(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
-//
-//        return (fun(point + 1.5 * delta) - 3 * fun(point + 0.5 * delta) + 3 * fun(point - 0.5 * delta) - fun(point - 1.5 * delta)) / (delta * delta * delta);
-//
-//    }
-//
-//    template<typename T1, typename T2>
-//    T1 derivative2_4(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
-//
-//        return (fun(point + 2 * delta) - 4 * fun(point + delta) + 6 * fun(point) - 4 * fun(point - delta) + fun(point - 2 * delta)) / (delta * delta * delta * delta);
-//
-//    }
-//
-//
-//
-//    template<typename T1, typename T2>
-//    T1 derivative3_1(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
-//
-//        //I modified the proof to Simpson's rule so that it may be extended to derivatives.
-//        //These coefficients will produce the approximate derivative of a 3rd degree interpolation.
-//        //Fun fact, summing up these coefficients for any derivativeM_N will always add to 0.
-//
-//        const T1 c1 = T1 (1) / T1 (24);
-//        const T1 c2 = T1 (9) / T1 (8);
-//
-//        return (-c1 * fun(point + 1.5 * delta) + c2 * fun(point + 0.5 * delta) - c2 * fun(point - 0.5 * delta) + c1 * fun(point - 1.5 * delta)) / delta;
-//    }
-//
-//    template<typename T1, typename T2>
-//    T1 derivative3_2(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
-//
-//        //These coefficients are the same as nesting derivative3_1 two times.
-//
-//        const T1 c1 = T1 (1) / T1(576);
-//        const T1 c2 = T1 (3) / T1 (32);
-//        const T1 c3 = T1 (87) / T1 (64);
-//        const T1 c4 = T1 (365) / T1 (144);
-//
-//        return (c1 * fun(point + 3 * delta) - c2 * fun(point + 2 * delta) + c3 * fun(point + delta) - c4 * fun(point) + c3 * fun(point - delta) - c2 * fun(point - 2 * delta) + c1 * fun(point - 3 * delta)) / (delta * delta);
-//    }
-//
-//    template<typename T1, typename T2>
-//    T1 derivative3_3(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
-//
-//        //These coefficients are the same as nesting der1 three times.
-//
-//        const T1 c1 = T1 (1) / T1 (13824);
-//        const T1 c2 = T1 (3) / T1 (512);
-//        const T1 c3 = T1 (21) / T1 (128);
-//        const T1 c4 = T1 (2005) / T1 (1152);
-//        const T1 c5 = T1 (1137) / T1 (256);
-//
-//        return (-c1 * fun(point + 4.5 * delta) + c2 * fun(point + 3.5 * delta) - c3 * fun(point + 2.5 * delta) + c4 * fun(point + 1.5 * delta) - c5 * fun(point + 0.5 * delta) + c5 * fun(point - 0.5 * delta) - c4 * fun(point - 1.5 * delta) + c3 * fun(point - 2.5 * delta) - c2 * fun(point - 3.5 * delta) + c1 * fun(point - 4.5 * delta)) / (delta * delta * delta);
-//    }
-//
-//    template<typename T1, typename T2>
-//    T1 derivative3_4(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
-//
-//        //These coefficients are the same as nesting der1 four times.
-//
-//        const T1 c1 = T1 (1) / T1 (331776);
-//        const T1 c2 = T1 (1) / T1 (3072);
-//        const T1 c3 = T1 (83) / T1 (6144);
-//        const T1 c4 = T1 (21871) / T1 (82944);
-//        const T1 c5 = T1 (9535) / T1 (4096);
-//        const T1 c6 = T1 (3659) / T1 (512);
-//        const T1 c7 = T1 (280301) / T1 (27648);
-//
-//        return (c1 * fun(point + 6 * delta) - c2 * fun(point + 5 * delta) + c3 * fun(point + 4 * delta) - c4 * fun(point + 3 * delta) + c5 * fun(point + 2 * delta) - c6 * fun(point + delta) + c7 * fun(point) - c6 * fun(point - delta) + c5 * fun(point - 2 * delta) - c4 * fun(point - 3 * delta) + c3 * fun(point - 4 * delta) - c2 * fun(point - 5 * delta) + c1 * fun(point - 6 * delta)) / (delta * delta * delta * delta);
-//    }
+//THESE ARE UNFINISHED, THEY ARE NOT LAZY ENOUGH
+    template<typename T1, typename T2>
+    T1 derivative2_2(T1 (*fun)(T1), const T2 point, const int precision = 2) {
+        T1 delta = 1.0;
+        T1 val = fun(point);
+
+        T1 val1 = (fun(point + delta) - 2 * val + fun(point - delta)) / (delta * delta);
+        T1 val2;
+
+        printf("%lf\n", val1);
+
+
+        do{
+
+            val2 = val1;
+
+            delta *= T1 (std::sqrt(0.1));
+
+            val1 = (fun(point + delta) - 2 * val + fun(point - delta)) / (delta * delta);
+
+        }while(std::abs(val1 - val2) > std::pow(10, -precision));
+
+        return val1;
+
+    }
+
+    template<typename T1, typename T2>
+    T1 derivative2_3(T1 (*fun)(T1), const T2 point, const int precision = 2) {
+        T1 delta = 0.1;
+
+        T1 val1 = (fun(point + 1.5 * delta) - 3 * fun(point + 0.5 * delta) + 3 * fun(point - 0.5 * delta) - fun(point - 1.5 * delta)) / (delta * delta * delta);
+        T1 val2;
+
+        do{
+
+            val2 = val1;
+
+            delta *= T1 (std::pow(0.10, 1.0 / 3.0));
+
+            val1 = (fun(point + 1.5 * delta) - 3 * fun(point + 0.5 * delta) + 3 * fun(point - 0.5 * delta) - fun(point - 1.5 * delta)) / (delta * delta * delta);
+
+        }while(std::abs(val1 - val2) > std::pow(10, -precision));
+
+        return val1;
+
+    }
+
+    template<typename T1, typename T2>
+    T1 derivative2_4(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
+
+        return (fun(point + 2 * delta) - 4 * fun(point + delta) + 6 * fun(point) - 4 * fun(point - delta) + fun(point - 2 * delta)) / (delta * delta * delta * delta);
+
+    }
+
+
+
+    template<typename T1, typename T2>
+    T1 derivative3_1(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
+
+        //I modified the proof to Simpson's rule so that it may be extended to derivatives.
+        //These coefficients will produce the approximate derivative of a 3rd degree interpolation.
+        //Fun fact, summing up the coefficients c1, c2, c3, etc. on the `return` line for any derivativeM_N will always add to 0.
+
+        const T1 c1 = T1 (1) / T1 (24);
+        const T1 c2 = T1 (9) / T1 (8);
+
+        return (-c1 * fun(point + 1.5 * delta) + c2 * fun(point + 0.5 * delta) - c2 * fun(point - 0.5 * delta) + c1 * fun(point - 1.5 * delta)) / delta;
+    }
+
+    template<typename T1, typename T2>
+    T1 derivative3_2(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
+
+        //These coefficients are the same as nesting derivative3_1 two times.
+
+        const T1 c1 = T1 (1) / T1(576);
+        const T1 c2 = T1 (3) / T1 (32);
+        const T1 c3 = T1 (87) / T1 (64);
+        const T1 c4 = T1 (365) / T1 (144);
+
+        return (c1 * fun(point + 3 * delta) - c2 * fun(point + 2 * delta) + c3 * fun(point + delta) - c4 * fun(point) + c3 * fun(point - delta) - c2 * fun(point - 2 * delta) + c1 * fun(point - 3 * delta)) / (delta * delta);
+    }
+
+    template<typename T1, typename T2>
+    T1 derivative3_3(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
+
+        //These coefficients are the same as nesting der1 three times.
+
+        const T1 c1 = T1 (1) / T1 (13824);
+        const T1 c2 = T1 (3) / T1 (512);
+        const T1 c3 = T1 (21) / T1 (128);
+        const T1 c4 = T1 (2005) / T1 (1152);
+        const T1 c5 = T1 (1137) / T1 (256);
+
+        return (-c1 * fun(point + 4.5 * delta) + c2 * fun(point + 3.5 * delta) - c3 * fun(point + 2.5 * delta) + c4 * fun(point + 1.5 * delta) - c5 * fun(point + 0.5 * delta) + c5 * fun(point - 0.5 * delta) - c4 * fun(point - 1.5 * delta) + c3 * fun(point - 2.5 * delta) - c2 * fun(point - 3.5 * delta) + c1 * fun(point - 4.5 * delta)) / (delta * delta * delta);
+    }
+
+    template<typename T1, typename T2>
+    T1 derivative3_4(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
+
+        //These coefficients are the same as nesting der1 four times.
+
+        const T1 c1 = T1 (1) / T1 (331776);
+        const T1 c2 = T1 (1) / T1 (3072);
+        const T1 c3 = T1 (83) / T1 (6144);
+        const T1 c4 = T1 (21871) / T1 (82944);
+        const T1 c5 = T1 (9535) / T1 (4096);
+        const T1 c6 = T1 (3659) / T1 (512);
+        const T1 c7 = T1 (280301) / T1 (27648);
+
+        return (c1 * fun(point + 6 * delta) - c2 * fun(point + 5 * delta) + c3 * fun(point + 4 * delta) - c4 * fun(point + 3 * delta) + c5 * fun(point + 2 * delta) - c6 * fun(point + delta) + c7 * fun(point) - c6 * fun(point - delta) + c5 * fun(point - 2 * delta) - c4 * fun(point - 3 * delta) + c3 * fun(point - 4 * delta) - c2 * fun(point - 5 * delta) + c1 * fun(point - 6 * delta)) / (delta * delta * delta * delta);
+    }
 
 }
