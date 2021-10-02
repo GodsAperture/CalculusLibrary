@@ -171,6 +171,21 @@ namespace calculus{
 
     }
 
+//    template<typename T>
+//    void rootsToCoefficients(T arr[], const int size){
+//        T temporaryArray[size + 1];
+//        temporaryArray[size] = 1;
+//
+//        for(int i = 0; i < size; i++){
+//            for(int k = size; k > size - i; k++){
+//
+//                temporaryArray[k] =
+//
+//            }
+//        }
+//
+//    }
+
     ////matrix related functions
 
     template<typename T>
@@ -742,8 +757,8 @@ namespace calculus{
 
         for(int i = 0; i <= iterations ; i++){
             initialConditions[0] += change * initialConditions[1];
-            fun(initialConditions, change);
             initialConditions[2] += change;
+            fun(initialConditions, change);
         }
 
     }
@@ -764,8 +779,8 @@ namespace calculus{
         for(int i = 0; i <= iterations ; i++){
             initialConditions[0] += change * initialConditions[1];
             initialConditions[1] += change * initialConditions[2];
-            fun(initialConditions, change);
             initialConditions[3] += change;
+            fun(initialConditions, change);
         }
 
     }
@@ -788,9 +803,9 @@ namespace calculus{
         for(int i = 0; i <= iterations; i++){
             initialConditions[0] += change * initialConditions[1] + del[1] * initialConditions[2];
             initialConditions[1] += change * initialConditions[2];
-            fun(initialConditions, change);
             initialConditions[3] += change;
-         }
+            fun(initialConditions, change);
+        }
 
     }
 
@@ -811,14 +826,14 @@ namespace calculus{
             initialConditions[0] += change * initialConditions[1];
             initialConditions[1] += change * initialConditions[2];
             initialConditions[2] += change * initialConditions[3];
-            fun(initialConditions, change);
             initialConditions[4] += change;
+            fun(initialConditions, change);
         }
 
     }
 
     template<typename T1, typename T2>
-    void ode3_2(void (*fun)(T1 [5], T1), T1 initialConditions[5], T2 end, double delta = 0.1){
+    void ode2_3(void (*fun)(T1 [5], T1), T1 initialConditions[5], T2 end, double delta = 0.1){
         // initialConditions[5] = {y(t0), y'(t0), y''(t0), y'''(t0), t0}
         T1 change;
         long int iterations = std::abs(end - initialConditions[4]) / delta;
@@ -836,8 +851,8 @@ namespace calculus{
             initialConditions[0] += del[0] * initialConditions[1] + del[1] * initialConditions[2];
             initialConditions[1] += del[0] * initialConditions[2] + del[1] * initialConditions[3];
             initialConditions[2] += del[0] * initialConditions[3];
-            fun(initialConditions, change);
             initialConditions[4] += change;
+            fun(initialConditions, change);
         }
 
     }
@@ -861,8 +876,8 @@ namespace calculus{
             initialConditions[0] += del[0] * initialConditions[1] + del[1] * initialConditions[2] + del[2] * initialConditions[3];
             initialConditions[1] += del[0] * initialConditions[2] + del[1] * initialConditions[3];
             initialConditions[2] += del[0] * initialConditions[3];
-            fun(initialConditions, del[0]);
             initialConditions[4] += del[0];
+            fun(initialConditions, del[0]);
         }
 
     }
