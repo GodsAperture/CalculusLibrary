@@ -1,7 +1,10 @@
+//Special definitions will go here later on that make coding more easy with inspiration from MatLab and Wolfram.
+
 #include <complex>
 #include <iostream>
 #include <vector>
 #include <functional>
+#include <cassert>
 
 /* ////DISCLAIMER////
  * THIS LIBRARY WAS BUILT FOR CALCULUS RELATED TASKS.
@@ -68,7 +71,240 @@ namespace constant{
     const long double E = 2.7182818284590452354;
 }
 
+template <typename T = double>
+struct matrix{
+    int dim1, dim2;
+    std::vector<T> mat;
+
+    matrix<T> row(std::vector<T> arr){
+        matrix<T> temp(1, arr.size());
+
+        for(int i = 0; i < arr.size(); i++){
+            temp.mat[i] = arr[i];
+        }
+
+        return temp;
+
+    }
+
+    matrix<T> col(std::vector<T> arr){
+        matrix<T> temp(arr.size(), 1);
+
+        for(int i = 0; i < arr.size(); i++){
+            temp.mat[i] = arr[i];
+        }
+
+        return temp;
+
+    }
+
+    explicit matrix(int x = 1, int y = 1): dim1(x), dim2(y), mat(x * y) {}
+
+    matrix<T> transpose(matrix<T> arr){
+        T temp[arr.dim1 * arr.dim2];
+
+        for(int i = 0; i < arr.dim2; i++){
+            for(int k = 0; k < arr.dim1; k++){
+
+                temp[k + i * arr.dim1] = arr.mat[i + k * arr.dim2];
+
+            }
+        }
+
+
+
+        for(int i = 0; i < arr.dim1 * arr.dim2; i++){
+            arr.mat[i] = temp[i];
+        }
+
+        arr.resize(arr.dim2, arr.dim1);
+
+        return arr;
+
+    }
+
+    void resize(int newDim1, int newDim2) {
+        this->dim1 = newDim1;
+        this->dim2 = newDim2;
+        this->mat.resize(this->dim1 * this->dim2);
+    }
+
+    matrix<T> operator*(const matrix<T> other){
+        assert((dim2 == other.dim1) || ((other.dim1 == 1) && (other.dim2 == 1)));
+        matrix<T> temp(dim1, other.dim2);
+        T sum = 0;
+
+        for (int i = 0; i < dim1; i++) {
+            for (int j = 0; j < other.dim2; j++) {
+                for (int k = 0; k < dim2; k++) {
+
+                    sum += mat[k + i * dim2] * other.mat[j + k * other.dim2];
+
+                }
+
+                temp.mat[i * other.dim2 + j] = sum;
+                sum = 0;
+
+            }
+
+        }
+
+        return temp;
+    }
+    template<typename T2>
+    matrix<T> operator*(const T2 val){
+
+        for(int i = 0; i < dim1 * dim2; i++){
+                mat[i] *= val;
+            }
+
+        return *this;
+    }
+
+    matrix<T> operator+(const matrix<T> other){
+        assert((dim1 == other.dim1) && (dim2 == other.dim2));
+
+        matrix<T> temp(dim1, dim2);
+
+        for(int i = 0; i < dim1 * dim2; i++){
+            temp.mat[i] = mat[i] + other.mat[i];
+        }
+
+        return temp;
+
+    }
+
+    matrix<T> operator=(const matrix<T> other){
+        resize(other.dim1, other.dim2);
+
+        for(int i = 0; i < other.dim1 * other.dim2; i++){
+            mat[i] = other.mat[i];
+        }
+
+        return other;
+
+    }
+
+    matrix<T> operator-(const matrix<T> other){
+        assert((dim1 == other.dim1) && (dim2 == other.dim2));
+
+        matrix<T> temp(dim1, dim2);
+
+        for(int i = 0; i < dim1 * dim2; i++){
+            temp.mat[i] = mat[i] - other.mat[i];
+        }
+
+        return temp;
+
+    }
+
+    matrix<T> operator-(){
+        matrix<T> temp(dim1, dim2);
+
+        for(int i = 0; i < dim1 * dim2; i++){
+            temp.mat[i] = -mat[i];
+        }
+
+        return temp;
+
+    }
+
+    matrix<T> operator*=(matrix<T> other){
+
+        *this = *this * other;
+
+        return *this;
+
+    }
+
+    matrix<T> operator+=(matrix<T> other){
+
+        *this = *this + other;
+
+        return *this;
+
+    }
+
+    matrix<T> operator-=(matrix<T> other){
+
+        *this = *this - other;
+
+        return *this;
+
+    }
+
+    matrix<T> operator~(){
+
+        return transpose(*this);
+
+    }
+
+    matrix<T> operator|(matrix<T> other){
+        assert((dim1 == other.dim1) && (dim2 == other.dim2));
+
+        for(int i = 0; i < dim1 * dim2; i++) {
+            mat[i] /= other.mat[i];
+        }
+
+        return *this;
+
+    }
+
+    matrix<T> operator^(matrix<T> other){
+        assert(((dim1 == other.dim1) && (other.dim2 == 1)) || ((other.dim1 == 1) && (dim2 == other.dim2)));
+
+        if((other.dim1 == 1) && (dim2 == other.dim2)){
+
+            for(int i = 0; i < dim1; i++){
+                for(int k = 0; k < dim2; k++){
+
+                    mat[i * dim2 + k] = std::pow(mat[i * dim2 + k], other.mat[k]);
+
+                }
+            }
+
+            return *this;
+
+        }
+        else{
+
+            for(int i = 0; i < dim1; i++){
+                for(int k = 0; k < dim2; k++){
+
+                    mat[i * dim2 + k] = std::pow(mat[i * dim2 + k], other.mat[i]);
+
+                }
+            }
+
+                return *this;
+        }
+
+
+    }
+
+    matrix<T> operator[](int val){
+        matrix<T> temp(1, dim2);
+
+        for (int i = 0; i < dim2; i++) {
+            temp.mat[i] = mat[i + dim2 * val];
+        }
+
+        return temp;
+
+    }
+
+    T operator()(int val){
+
+        return mat[val];
+
+    }
+
+};
+
 namespace calculus{
+
+    ////array stuff
+
     ////basic assets
 
     template<typename T>
@@ -130,7 +366,7 @@ namespace calculus{
     }
 
     template<typename T>
-    T crossProduct(T arr1[], const int size, T arr2[]){
+    T area(T arr1[], const int size, T arr2[]){
         T sum = 0;
         T val;
 
@@ -157,19 +393,6 @@ namespace calculus{
 
     }
 
-
-    long int factorial(long int x){
-        long int product = 1;
-
-        for(int i = 1; i < x + 1; i++){
-
-            product *= i;
-
-        }
-
-        return product;
-
-    }
 
 //    template<typename T>
 //    void rootsToCoefficients(T arr[], const int size){
@@ -349,7 +572,7 @@ namespace calculus{
 
     }
 
-////In its current form, derivative2_N is very ineffective for derivatives of `num` greater than two. I really need a new method.
+////In its current form, derivative2_N is very ineffective for derivatives of `num` greater than two. I really need a better method.
     template<typename T1, typename T2>
     T1 derivative2_N(T1 (*fun)(T1), const T2 point, const int num, const T1 delta = 0.1){
         T1 temp[num + 1];
@@ -370,8 +593,6 @@ namespace calculus{
         return temp[0];
 
     }
-
-
 
     template<typename T1, typename T2>
     T1 derivative3_1(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
@@ -428,7 +649,7 @@ namespace calculus{
         return (c1 * fun(point + 6 * delta) - c2 * fun(point + 5 * delta) + c3 * fun(point + 4 * delta) - c4 * fun(point + 3 * delta) + c5 * fun(point + 2 * delta) - c6 * fun(point + delta) + c7 * fun(point) - c6 * fun(point - delta) + c5 * fun(point - 2 * delta) - c4 * fun(point - 3 * delta) + c3 * fun(point - 4 * delta) - c2 * fun(point - 5 * delta) + c1 * fun(point - 6 * delta)) / (delta * delta * delta * delta);
     }
 
-////In its current form, derivative3_N is ineffective for derivatives of 'num' greater than 6. I need a new method.
+////In its current form, derivative3_N is ineffective for derivatives of 'num' greater than six. I need a new method.
     template<typename T1, typename T2>
     T1 derivative3_N(T1 (*fun)(T1), const T2 point, const int num, const T1 delta = 0.1){
         T1 temp[3 * num + 1];
@@ -521,7 +742,7 @@ namespace calculus{
         ////function to array based differentiation
 
     template<typename T1, typename T2, typename T3, typename T4>
-    void derivative2_1(T1 (*fun)(T1), const int size, T2 arr[], const T3 delta = 0.1, const T4 start = 0){
+    void derivative2_1(T1 (*fun)(T1), const int size, T2 arr[], const T3 delta = 0.1, const T4 start = 0) {
         const T2 coe = 1 / delta;
         const T2 temp1 = fun(start - 0.5 * delta);
         const T2 temp2 = fun(start + 0.5 * delta);
@@ -536,7 +757,7 @@ namespace calculus{
     }
 
     template<typename T>
-    void derivative2_2(T (*fun)(T), const int size, T arr[], const T delta = 0.1, const T start = 0){
+    void derivative2_2(T (*fun)(T), const int size, T arr[], const T delta = 0.1, const T start = 0) {
         const T coe = 1 / delta;
         const T coe2 = coe * coe;
         T temp1 = fun(start - delta);
@@ -798,7 +1019,7 @@ namespace calculus{
             change = -std::abs(delta);
         }
 
-        T1 del[2] = {change, change * change / 2};
+        T1 del[2] = {change, change * change / T1(2)};
 
         for(int i = 0; i <= iterations; i++){
             initialConditions[0] += change * initialConditions[1] + del[1] * initialConditions[2];
@@ -815,7 +1036,7 @@ namespace calculus{
         T1 change;
         long int iterations = std::abs(end - initialConditions[4]) / delta;
 
-        if(initialConditions[3] < end){
+        if(initialConditions[4] < end){
             change = std::abs(delta);
         }
         else{
@@ -838,14 +1059,14 @@ namespace calculus{
         T1 change;
         long int iterations = std::abs(end - initialConditions[4]) / delta;
 
-        if(initialConditions[3] < end){
+        if(initialConditions[4] < end){
             change = std::abs(delta);
         }
         else{
             change = -std::abs(delta);
         }
 
-        T1 del[2] = {change, change * change / 2};
+        T1 del[2] = {change, change * change / T1(2)};
 
         for(int i = 0; i <= iterations; i++){
             initialConditions[0] += del[0] * initialConditions[1] + del[1] * initialConditions[2];
@@ -863,14 +1084,14 @@ namespace calculus{
         T1 change;
         long int iterations = std::abs(end - initialConditions[4]) / delta;
 
-        if(initialConditions[3] < end){
+        if(initialConditions[4] < end){
             change = std::abs(delta);
         }
         else{
             change = -std::abs(delta);
         }
 
-        T1 del[3] = {change, change * change / 2, change * change * change / 6};
+        T1 del[3] = {change, change * change / T1(2), change * change * change / T1(6)};
 
         for(int i = 0; i <= iterations; i++){
             initialConditions[0] += del[0] * initialConditions[1] + del[1] * initialConditions[2] + del[2] * initialConditions[3];
@@ -882,7 +1103,205 @@ namespace calculus{
 
     }
 
+
+
+
+
+    ////vector stuff
+
+    template<typename T>
+    void array(T (*fun)(T), std::vector<T> &arr, const T delta = 0.1, const T start = 0){
+
+        for(int i = 0; i < arr.size(); i++){
+            arr[i] = fun(start + i * delta);
+        }
+
+    }
+
+    template<typename T1, typename T2>
+    void function(T1 (*fun)(T1), std::vector<T2> &arr){
+
+        for(int i = 0; i < arr.size(); i++){
+            arr[i] = fun(arr[i]);
+        }
+
+    }
+
+    template<typename T1, typename T2, typename T3>
+    void linspace(std::vector<T1> &arr, T2 start, T3 end){
+        T1 spacing = (end - start) / (arr.size() - 1);
+
+        for(int i = 0; i < arr.size(); i++){
+            arr[i] = start + i * spacing;
+        }
+
+    }
+
+    template<typename T>
+    std::vector<T> difference(std::vector<T> &arr, int depth = 1){
+
+        for(int i = 0; i <= depth; i++) {
+            for (int k = 0; k < arr.size() - 1; k++) {
+
+                arr[k] = arr[k + 1] - arr[k];
+
+            }
+            arr.resize(arr.size() - 1);
+        }
+    }
+
+    template<typename T>
+    T dotProduct(std::vector<T> arr1, std::vector<T> arr2){
+        assert(arr1.size() == arr2.size());
+        T sum = 0;
+
+        for(int i = 0; i < arr1.size(); i++){
+            sum += arr1[i] * arr2[i];
+        }
+
+        return sum;
+
+    }
+
+    template<typename T>
+    T area(std::vector<T> arr1, std::vector<T> arr2){
+        assert(arr1.size() == arr2.size());
+        T sum = 0;
+        T val;
+
+        for(int i = 0; i < arr1.size(); i++){
+            for(int k = i + 1; k < arr2.size(); k++){
+                val = arr1[i] * arr2[k] - arr1[k] * arr2[i];
+                sum += val * val;
+            }
+        }
+
+        return sqrtl(sum);
+
+    }
+
+    template<typename T>
+    T magnitude(std::vector<T> arr){
+        T sum = 0;
+
+        for(int i = 0; i < arr.size(); i++){
+            sum += arr[i] * arr[i];
+        }
+
+        return sqrtl(sum);
+
+    }
+
+    ////matrix stuff
+
+    matrix<double> identityMatrix(int size){
+        matrix temp(size, size);
+
+        for(int i = 0; i < size; i++){
+            for(int j = 0; j < size; j++){
+                temp.mat[i + j * size] = (i == j);
+            }
+        }
+
+        return temp;
+
+    }
+
+    template<typename T>
+    void printMatrixf(matrix<T> arr){
+
+        for(int i = 0; i < arr.dim1; i++){
+            for(int k = 0; k < arr.dim2; k++){
+                if(arr.mat[k + i * arr.dim2] >= 0) {
+                    std::cout << std::fixed << arr.mat[k + i * arr.dim2] << "  ";
+                }
+                else{
+                    std::cout << std::fixed << arr.mat[k + i * arr.dim2] << " ";
+                }
+            }
+            printf("\n");
+        }
+
+    }
+
+    template<typename T>
+    void printMatrixs(matrix<T> arr){
+
+        for (int i = 0; i < arr.dim1; i++) {
+            for (int k = 0; k < arr.dim2; k++) {
+                if (arr.mat[k + i * arr.dim2] >= 0) {
+                    std::cout << std::scientific << arr.mat[k + i * arr.dim2] << "  ";
+                } else {
+                    std::cout << std::scientific << arr.mat[k + i * arr.dim2] << " ";
+                }
+            }
+            printf("\n");
+        }
+
+    }
+
+    template <typename T>
+    T index(matrix<T> arr1, matrix<T> arr2, const int index1, const int index2){
+        T sum = 0;
+
+        for(int i = 0; i < arr1.dim1; i++){
+
+            sum += arr1[index1 * arr1.dim2 + i] * arr2[index2 * arr2.dim2 + i * arr2.dim2];
+
+        }
+
+        return sum;
+
+    }
+
+    template<typename T1, typename T2>
+    matrix<T2> function(T1 (*fun)(T1), matrix<T2> arr){
+
+        for(int i = 0; i < arr.dim1 * arr.dim2; i++){
+            arr.mat[i] = fun(arr.mat[i]);
+        }
+
+        return arr;
+    }
+
+    ////other stuff
+    long int factorial(long int x){
+        long int product = 1;
+
+        for(int i = 1; i < x + 1; i++){
+
+            product *= i;
+
+        }
+
+        return product;
+
+    }
+
 }
+
+template<typename T1, typename T2>
+    matrix<T1> operator*(T2 val, matrix<T1> arr){
+
+    for(int i = 0; i < arr.dim1 * arr.dim2; i++){
+        arr.mat[i] *= val;
+    }
+
+    return arr;
+
+}
+
+    template<typename T1, typename T2>
+    matrix<T1> operator&(T2 (*fun)(T2), matrix<T1> other){
+
+        for(int i = 0; i < other.dim1 * other.dim2; i++) {
+            other.mat[i] = fun(other.mat[i]);
+        }
+
+        return other;
+
+}
+
 
     //This namespace is for lazier versions of functions that the computer guesses `delta` for a good, working answer.
     //These will adjust `delta` automatically for a decent answer or just break entirely due to machine precision limitations. Use these wisely.
@@ -910,7 +1329,7 @@ namespace lazy{
 
     }
 
-//THESE ARE UNFINISHED, THEY ARE NOT LAZY ENOUGH
+    //THESE ARE UNFINISHED, THEY ARE NOT LAZY ENOUGH
     template<typename T1, typename T2>
     T1 derivative2_2(T1 (*fun)(T1), const T2 point, const int precision = 2) {
         T1 delta = 1.0;
@@ -957,69 +1376,69 @@ namespace lazy{
 
     }
 
-    template<typename T1, typename T2>
-    T1 derivative2_4(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
-
-        return (fun(point + 2 * delta) - 4 * fun(point + delta) + 6 * fun(point) - 4 * fun(point - delta) + fun(point - 2 * delta)) / (delta * delta * delta * delta);
-
-    }
-
-
-
-    template<typename T1, typename T2>
-    T1 derivative3_1(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
-
-        //I modified the proof to Simpson's rule so that it may be extended to derivatives.
-        //These coefficients will produce the approximate derivative of a 3rd degree interpolation.
-        //Fun fact, summing up the coefficients c1, c2, c3, etc. on the `return` line for any derivativeM_N will always add to 0.
-
-        const T1 c1 = T1 (1) / T1 (24);
-        const T1 c2 = T1 (9) / T1 (8);
-
-        return (-c1 * fun(point + 1.5 * delta) + c2 * fun(point + 0.5 * delta) - c2 * fun(point - 0.5 * delta) + c1 * fun(point - 1.5 * delta)) / delta;
-    }
-
-    template<typename T1, typename T2>
-    T1 derivative3_2(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
-
-        //These coefficients are the same as nesting derivative3_1 two times.
-
-        const T1 c1 = T1 (1) / T1(576);
-        const T1 c2 = T1 (3) / T1 (32);
-        const T1 c3 = T1 (87) / T1 (64);
-        const T1 c4 = T1 (365) / T1 (144);
-
-        return (c1 * fun(point + 3 * delta) - c2 * fun(point + 2 * delta) + c3 * fun(point + delta) - c4 * fun(point) + c3 * fun(point - delta) - c2 * fun(point - 2 * delta) + c1 * fun(point - 3 * delta)) / (delta * delta);
-    }
-
-    template<typename T1, typename T2>
-    T1 derivative3_3(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
-
-        //These coefficients are the same as nesting der1 three times.
-
-        const T1 c1 = T1 (1) / T1 (13824);
-        const T1 c2 = T1 (3) / T1 (512);
-        const T1 c3 = T1 (21) / T1 (128);
-        const T1 c4 = T1 (2005) / T1 (1152);
-        const T1 c5 = T1 (1137) / T1 (256);
-
-        return (-c1 * fun(point + 4.5 * delta) + c2 * fun(point + 3.5 * delta) - c3 * fun(point + 2.5 * delta) + c4 * fun(point + 1.5 * delta) - c5 * fun(point + 0.5 * delta) + c5 * fun(point - 0.5 * delta) - c4 * fun(point - 1.5 * delta) + c3 * fun(point - 2.5 * delta) - c2 * fun(point - 3.5 * delta) + c1 * fun(point - 4.5 * delta)) / (delta * delta * delta);
-    }
-
-    template<typename T1, typename T2>
-    T1 derivative3_4(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
-
-        //These coefficients are the same as nesting der1 four times.
-
-        const T1 c1 = T1 (1) / T1 (331776);
-        const T1 c2 = T1 (1) / T1 (3072);
-        const T1 c3 = T1 (83) / T1 (6144);
-        const T1 c4 = T1 (21871) / T1 (82944);
-        const T1 c5 = T1 (9535) / T1 (4096);
-        const T1 c6 = T1 (3659) / T1 (512);
-        const T1 c7 = T1 (280301) / T1 (27648);
-
-        return (c1 * fun(point + 6 * delta) - c2 * fun(point + 5 * delta) + c3 * fun(point + 4 * delta) - c4 * fun(point + 3 * delta) + c5 * fun(point + 2 * delta) - c6 * fun(point + delta) + c7 * fun(point) - c6 * fun(point - delta) + c5 * fun(point - 2 * delta) - c4 * fun(point - 3 * delta) + c3 * fun(point - 4 * delta) - c2 * fun(point - 5 * delta) + c1 * fun(point - 6 * delta)) / (delta * delta * delta * delta);
-    }
+//    template<typename T1, typename T2>
+//    T1 derivative2_4(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
+//
+//        return (fun(point + 2 * delta) - 4 * fun(point + delta) + 6 * fun(point) - 4 * fun(point - delta) + fun(point - 2 * delta)) / (delta * delta * delta * delta);
+//
+//    }
+//
+//
+//
+//    template<typename T1, typename T2>
+//    T1 derivative3_1(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
+//
+//        //I modified the proof to Simpson's rule so that it may be extended to derivatives.
+//        //These coefficients will produce the approximate derivative of a 3rd degree interpolation.
+//        //Fun fact, summing up the coefficients c1, c2, c3, etc. on the `return` line for any derivativeM_N will always add to 0.
+//
+//        const T1 c1 = T1 (1) / T1 (24);
+//        const T1 c2 = T1 (9) / T1 (8);
+//
+//        return (-c1 * fun(point + 1.5 * delta) + c2 * fun(point + 0.5 * delta) - c2 * fun(point - 0.5 * delta) + c1 * fun(point - 1.5 * delta)) / delta;
+//    }
+//
+//    template<typename T1, typename T2>
+//    T1 derivative3_2(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
+//
+//        //These coefficients are the same as nesting derivative3_1 two times.
+//
+//        const T1 c1 = T1 (1) / T1(576);
+//        const T1 c2 = T1 (3) / T1 (32);
+//        const T1 c3 = T1 (87) / T1 (64);
+//        const T1 c4 = T1 (365) / T1 (144);
+//
+//        return (c1 * fun(point + 3 * delta) - c2 * fun(point + 2 * delta) + c3 * fun(point + delta) - c4 * fun(point) + c3 * fun(point - delta) - c2 * fun(point - 2 * delta) + c1 * fun(point - 3 * delta)) / (delta * delta);
+//    }
+//
+//    template<typename T1, typename T2>
+//    T1 derivative3_3(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
+//
+//        //These coefficients are the same as nesting der1 three times.
+//
+//        const T1 c1 = T1 (1) / T1 (13824);
+//        const T1 c2 = T1 (3) / T1 (512);
+//        const T1 c3 = T1 (21) / T1 (128);
+//        const T1 c4 = T1 (2005) / T1 (1152);
+//        const T1 c5 = T1 (1137) / T1 (256);
+//
+//        return (-c1 * fun(point + 4.5 * delta) + c2 * fun(point + 3.5 * delta) - c3 * fun(point + 2.5 * delta) + c4 * fun(point + 1.5 * delta) - c5 * fun(point + 0.5 * delta) + c5 * fun(point - 0.5 * delta) - c4 * fun(point - 1.5 * delta) + c3 * fun(point - 2.5 * delta) - c2 * fun(point - 3.5 * delta) + c1 * fun(point - 4.5 * delta)) / (delta * delta * delta);
+//    }
+//
+//    template<typename T1, typename T2>
+//    T1 derivative3_4(T1 (*fun)(T1), const T2 point, const T1 delta = 0.1) {
+//
+//        //These coefficients are the same as nesting der1 four times.
+//
+//        const T1 c1 = T1 (1) / T1 (331776);
+//        const T1 c2 = T1 (1) / T1 (3072);
+//        const T1 c3 = T1 (83) / T1 (6144);
+//        const T1 c4 = T1 (21871) / T1 (82944);
+//        const T1 c5 = T1 (9535) / T1 (4096);
+//        const T1 c6 = T1 (3659) / T1 (512);
+//        const T1 c7 = T1 (280301) / T1 (27648);
+//
+//        return (c1 * fun(point + 6 * delta) - c2 * fun(point + 5 * delta) + c3 * fun(point + 4 * delta) - c4 * fun(point + 3 * delta) + c5 * fun(point + 2 * delta) - c6 * fun(point + delta) + c7 * fun(point) - c6 * fun(point - delta) + c5 * fun(point - 2 * delta) - c4 * fun(point - 3 * delta) + c3 * fun(point - 4 * delta) - c2 * fun(point - 5 * delta) + c1 * fun(point - 6 * delta)) / (delta * delta * delta * delta);
+//    }
 
 }
