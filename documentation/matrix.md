@@ -6,10 +6,16 @@ The contents of the matrix are stored in an `std::vector<T>` named `mat` and if 
 
 
 int main(){
-  matrix y(3,2);
-  y = {1, 2, 3, 4, 5, 6};
+  matrix y(3,3);
+  y = {2, 9, 9, 7, 9, 2, 4, 5, 8};
 
   calculus::printMatrixf(y);
   
   return 0;
+```
+This code will print out:
+```c++
+2.000000 9.000000 9.000000
+7.000000 7.000000 7.000000
+4.000000 5.000000 8.000000
 ```
