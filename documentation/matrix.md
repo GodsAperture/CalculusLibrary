@@ -3,21 +3,16 @@ The contents of the matrix are stored in an `std::vector<T>` named `mat` and if 
 
 The `matrix` struct has been templated to hold any defined data type the user wishes to have. The operators that need to be overloaded so that `matrix` use its operator overloads are `/`, `*`, `-`, and `+`. The rest are templated to make overloading easier for the users preferred data type.
 
+All matrices can be invoked with or without dimension specifications.
 ```c++
-#include "calclib.h"
-
-
-int main(){
-  matrix y(3,3);
-  y = {2, 9, 9, 7, 9, 2, 4, 5, 8};
-
-  calculus::printMatrixf(y);
-  
-  return 0;
+matrix A;
+matrix b(1,3);
 ```
-This code will print out:
+Matrices that are generated without dimension specifications default to a 1x1 matrix.
+
+Matrices can then be assigned values through a generated list.
 ```c++
-2.000000 9.000000 9.000000
-7.000000 7.000000 7.000000
-4.000000 5.000000 8.000000
+b = {1, 2, 3};
+A = b;
 ```
+A will automatically be resized to be the same dimensions as `b`.
