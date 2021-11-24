@@ -15,4 +15,4 @@ Matrices can then be assigned values through a generated list.
 b = {1, 2, 3};
 A = b;
 ```
-A will automatically be resized to be the same dimensions as `b`.
+`A` will automatically be resized to be the same dimensions as `b`.
