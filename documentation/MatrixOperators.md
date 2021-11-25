@@ -83,7 +83,7 @@ A.mat = {2, 9, 9, 7, 9, 2, 4, 5, 8};
 b.mat = {1, 2, 3};
 c.mat = {3};
 
-b / A //This is equivalent to A^-1 * b or solving the system A * x = b for x. The returned value will be {-0.510, 2.117, -0.306}.
+b / A //This is equivalent to b * A^-1 or solving the system x * A = b for x. The returned value will be a 3x1 matrix containing {0.717, 0.323, -0.306}.
 A / c //This will return a new matrix whose contents are the elements of A divided by the lone element in c.
 ```
 
@@ -104,4 +104,41 @@ matrix x;
 
 -A;//This will be the negative of every element in A.
 A - x;//This will subtract every index wise element in b from A.
+```
+
+The `|` operator behaves similarly to MatLab's `\` operator, solving a system of equations.
+```c++
+matrix A(3, 3);
+matrix b(3, 1);
+A.mat = {2, 9, 9, 7, 9, 2, 4, 5, 8};
+b.mat = {1, 2, 3};
+
+A | b //This is equivalent to A^-1 * b or solving the system A * x = b for x. The returned value will be a 3x1 matrix containing {-0.510, 2.117, -0.306}.
+```
+
+The `^` operator behaves like MatLab's `^` operator. It will create an `MxN` matrix from a `Mx1`
+matrix as the base and a `1xN` matrix as the exponent or making a different `MxN` matrix from
+a `1xN` matrix as the base with a `Mx1` matrix as the exponent.
+```c++
+matrix A(1, 3);
+matrix x(3, 1);
+A.mat = {-1, 0, 1};
+x.mat = {0, 1, 2};
+
+A ^ x //This will return a 3x3 matrix whose contents are {(-1)^0, 0^0, 1^0, (-1)^1, 0^1, 1^1, (-1)^2, 0^2, 1^2}.
+      //After simplifying, that will become {1, 1, 1, -1, 0, 1, 1, 0, 1}.
+x ^ A //This will return a 3x3 matrix whose contents are {0^-1, 0^0, 0^1, 1^-1, 1^0, 1^-1, 2^-1, 2^0, 2^1}.
+      //After simplifying, that will become {NaN, 1, 0, 1, 1, 1, 0.5, 1, 2}.
+```
+
+The `*=` operator is like MatLab's `.*` operator in that it will just perform index wise multiplication.
+
+The `^=` operator is like MatLab's `.^` operator in that it will just perform index wise exponentiation.
+```c++
+matrix A(2, 2);
+matrix x(2, 2);
+A.mat = {1, 2, 3, 4};
+x.mat = {1, 0, 0, 1};
+
+A ^= x //This will return {1^1, 2^0, 3^0, 4^1}.
 ```
