@@ -1,7 +1,9 @@
 The `matrix<T>` data type emulates matrices from mathematics, including retaining its dimensions as `dim1` and `dim2`.
 The contents of the matrix are stored in an `std::vector<T>` named `mat` and if no data type is specified upon construction, it will default to type `double`.
 
-The `matrix` struct has been templated to hold any defined data type the user wishes to have. The operators that need to be overloaded so that `matrix` use its operator overloads are `/`, `*`, `-`, and `+`. The rest are templated to make overloading easier for the users preferred data type.
+The `matrix` struct has been templated to hold any defined data type the user wishes to have. 
+
+- If one wishes to include their generated data type for `matrix`, then the operators that need to be overloaded so that `matrix` can properly use its operator overloads are `/`, `*`, `-`, and `+`. The rest rely on those 4 operators.
 
 All matrices can be constructed with or without dimension specifications.
 ```c++
