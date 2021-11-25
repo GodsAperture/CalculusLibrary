@@ -12,7 +12,7 @@ Matrices that are generated without dimension specifications default to a 1x1 ma
 
 Matrices can then be assigned values through a generated list.
 ```c++
-b = {1, 2, 3};
+b.mat = {1, 2, 3};
 A = b;
 ```
 `A` will automatically be resized to be the same dimensions as `b`.
