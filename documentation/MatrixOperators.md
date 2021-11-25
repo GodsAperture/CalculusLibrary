@@ -132,6 +132,24 @@ x ^ A //This will return a 3x3 matrix whose contents are {0^-1, 0^0, 0^1, 1^-1, 
 ```
 
 The `*=` operator is like MatLab's `.*` operator in that it will just perform index wise multiplication.
+```c++
+matrix A(2, 2);
+matrix x(2, 2);
+A.mat = {1, 2, 3, 4};
+x.mat = {1, 0, 0, 1};
+
+A *= x //This will return {1, 0, 0, 4};
+```
+
+The `/=` operator is like MatLab's `./` operator in that it will just perform index wise division.
+```c++
+matrix A(2, 2);
+matrix x(2, 2);
+A.mat = {1, 2, 3, 4};
+b.mat = {1, 1/2, 1/3, 1/4};
+
+A /= b //This will return {1, 4, 9, 16};
+```
 
 The `^=` operator is like MatLab's `.^` operator in that it will just perform index wise exponentiation.
 ```c++
@@ -141,4 +159,35 @@ A.mat = {1, 2, 3, 4};
 x.mat = {1, 0, 0, 1};
 
 A ^= x //This will return {1^1, 2^0, 3^0, 4^1}.
+```
+
+The `&` operator will apply a function pointer to each row of a matrix and return a new matrix with the corresponding rows as the results.
+```c++
+matrix A(2, 2);
+
+matrix<double> magnitude(matrix<double> Matrix){
+      matrix<double> sum;
+      sum.mat = {0};
+      
+      for(int i = 0; i < Matrix.dim2; i++){
+            sum.mat[0] = sum.mat[0] + Matrix.mat[i] * Matrix.mat[i];
+      }
+      
+      sum.mat[0] = std::sqrt(sum.mat[0]);
+
+      return sum;
+
+}
+
+A.mat = {5, 12, 3, 4};
+
+magnitude & A //This will return a new matrix whose elements are {13, 5}.
+```
+
+The `&&` will apply a function pointer to each entry in a matrix.
+```c++
+matrix A(2, 2);
+A.mat = {0, 1, 2, 1.57};
+
+sin && A //This will return a matrix whose elements are {0, 0.841, 0.909, and 1.000}.
 ```
