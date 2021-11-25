@@ -3,7 +3,7 @@ The contents of the matrix are stored in an `std::vector<T>` named `mat` and if 
 
 The `matrix` struct has been templated to hold any defined data type the user wishes to have. The operators that need to be overloaded so that `matrix` use its operator overloads are `/`, `*`, `-`, and `+`. The rest are templated to make overloading easier for the users preferred data type.
 
-All matrices can be invoked with or without dimension specifications.
+All matrices can be constructed with or without dimension specifications.
 ```c++
 matrix A;
 matrix b(1,3);
