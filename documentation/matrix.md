@@ -17,9 +17,11 @@ A = b;
 ```
 `A` will automatically be resized to be the same dimensions as `b`.
 
-It is entirely possible to type cast a matrix to a new type.
+It is entirely possible to type cast a copy of a matrix to a new type.
 ```c++
 matrix A; //A is a matrix of type double.
 
-(matrix<int>) A;//A is now a matrix whose entries have all been cast to type int.
+(matrix<int>) A;
+//This is now a matrix whose entries have all been cast to type int.
+//However, A is still defined as a matrix of type double everywhere else.
 ```
