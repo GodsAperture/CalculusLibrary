@@ -4,19 +4,18 @@
  * THE METHODS EMPLOYED ARE APPROXIMATIONS AND MAY CAUSE SEVERE DETERIORATION TO DATA IF USED IMPROPERLY.
  */
 
-//This namespace will only contain commonly used constants, and will be updated as I find more. Constants will be Pascal case.
-
 #include <complex>
 #include <iostream>
 #include <vector>
 #include <cassert>
 
+//This namespace will only contain commonly used constants, and will be updated as I find more. Constants will be Pascal case.
 namespace constant{
 //If you don't know what Pi is, God help you.
-    const long double Pi = 3.1415926535897932385;
+    const double Pi = 3.1415926535897932;
 
 //If you don't know what E is, that's okay.
-    const long double E = 2.7182818284590452354;
+    const double E = 2.7182818284590452;
 }
 
 template <typename T = double>
@@ -87,7 +86,7 @@ struct matrix{
 
 
 
-    //Redefine a matrix, this will automatically resize the matrix on the left as necessary.
+    //Redefine a matrix, this will automatically resize 'this' as necessary.
     matrix<T>& operator=(const matrix<T> &Matrix){
         resize(Matrix.dim1, Matrix.dim2);
 
@@ -98,6 +97,33 @@ struct matrix{
         return *this;
 
     }
+
+    //Initialize a matrix, this will automatically resize 'this' as necessary.
+    matrix<T>& operator=(const std::initializer_list <std::initializer_list<T>> Matrix){
+        int val = Matrix.begin() -> size();
+        int ROW = 0;
+        int COL;
+        resize(Matrix.size(), Matrix.begin() -> size());
+
+
+        for(const auto &i:Matrix){
+            COL = 0;
+
+            if(val != Matrix.begin() -> size()){
+                printf("The dimensions of the initializer_lists are not valid for a matrix.\n");
+                assert(0);
+            }
+
+                for(const auto &k:i){
+                mat[COL + ROW * (Matrix.begin() -> size())] = (T) k;
+                COL++;
+            }
+            ROW++;
+        }
+
+        return *this;
+
+    };
 
     //Allows you to make every entry in a matrix negative.
     matrix<T> operator-(){
@@ -647,7 +673,7 @@ struct matrix{
 
             //The following for loop begins the solving process by substitution with the upper triangular matrix.
             for(int column = dim2 - 1; column >= 0; column--){
-                for(int column2 = 0; column2 < dim2; column2++){
+                for(int column2 = 0; column2 < Matrix.dim2; column2++){
                     for(int element = 0; element < column; element++){
 
                         Matrix.mat[element * Matrix.dim2 + column2] = (Matrix.mat[element * Matrix.dim2 + column2] - upperTriangular.mat[dim2 * element + column] / upperTriangular.mat[column * dim2 + column] * Matrix.mat[column * Matrix.dim2 + column2]);
@@ -657,9 +683,9 @@ struct matrix{
             }
 
             //The following for loop finishes the work by dividing each row by each entry along the diagonal of upperTriangular.
-            for(int i = 0; i < dim2; i++){
-                for(int k = 0; k < dim2; k++){
-                    Matrix.mat[i * dim2 + k] = Matrix.mat[i * dim2 + k] / upperTriangular.mat[i + i * dim2];
+            for(int i = 0; i < Matrix.dim1; i++){
+                for(int k = 0; k < Matrix.dim2; k++){
+                    Matrix.mat[i * Matrix.dim2 + k] = Matrix.mat[i * Matrix.dim2 + k] / upperTriangular.mat[i + i * dim2];
                 }
             }
 
@@ -834,15 +860,15 @@ struct matrix{
         }
         else{
             matrix<T> other(dim1, dim2);
-            
+
             for(int i = 0; i < dim1 * dim2; i++){
-                
+
                 other.mat[i] = std::pow(other.mat[i], Matrix.mat[0]);
-                
+
             }
-            
+
             return other;
-            
+
         }
 
 
